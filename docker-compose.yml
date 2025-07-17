@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: django_app
+    command: poetry run python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - local.env
+    volumes:
+      - .:/srv
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pg-database
+
+  pg-database:
+    image: postgres:16
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: pg_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
