@@ -1,3 +1,5 @@
+import time
+
 from django.db import transaction
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -20,6 +22,7 @@ class WithdrawView(APIView):
                 return Response({'error': 'Insufficient funds'}, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
+                time.sleep(0.2)
                 account.balance -= amount
                 account.save()
                 Transaction.objects.create(
