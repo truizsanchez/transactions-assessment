@@ -1,6 +1,5 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema, inline_serializer
 from rest_framework import serializers
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 
 

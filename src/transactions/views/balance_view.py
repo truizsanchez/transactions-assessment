@@ -1,7 +1,7 @@
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from transactions.serializers import BalanceSerializer
 

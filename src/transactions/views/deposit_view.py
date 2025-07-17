@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
