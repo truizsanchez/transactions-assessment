@@ -1,13 +1,16 @@
+import json
+
 from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.test import TestCase
-from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.reverse import reverse
+
 from transactions.models.account import Account
 from transactions.models.transaction import Transaction
-import json
+
 
 class WithdrawViewTest(TestCase):
     def setUp(self):

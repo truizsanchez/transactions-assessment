@@ -15,7 +15,35 @@ psycopg = "^3.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 pytest-django = "^4.5"
+ruff="*"
+ipdb = "*"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+line-length = 119
+target-version = "py312"
+src = ["src"]
+
+
+[tool.ruff.lint]
+select = ["F", "I", "UP", "E"] # isort, # pyflakes, # upgrade syntax for new Python versions
+exclude = ["src/configs/settings/*", "**/migrations/*"]
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+lines-between-types = 1
+
+[tool.ruff.format]
+quote-style = "double"
+
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "single"
+avoid-escape = true
+

@@ -25,5 +25,21 @@ services:
     ports:
       - "5432:5432"
 
+  ruff:
+    build:
+      context: .
+    working_dir: /srv
+    command: poetry run ruff check .
+    volumes:
+      - .:/srv
+
+  ruff-fix:
+    build:
+      context: .
+    working_dir: /srv
+    command: poetry run ruff check . --fix
+    volumes:
+      - .:/srv
+
 volumes:
   postgres_data:
