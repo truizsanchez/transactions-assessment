@@ -1,10 +1,11 @@
 from django.db import transaction
-from rest_framework.views import APIView
+from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework.views import APIView
 
 from transactions.models.transaction import Transaction
 from transactions.serializers import TransactionSerializer
+
 
 class WithdrawView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -26,5 +27,7 @@ class WithdrawView(APIView):
                     transaction_type=Transaction.TransactionType.WITHDRAW,
                     amount=amount
                 )
-            return Response({'message': 'Withdrawal successful', 'new_balance': account.balance}, status=status.HTTP_200_OK)
+            return Response(
+                {'message': 'Withdrawal successful', 'new_balance': account.balance}, status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

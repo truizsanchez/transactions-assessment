@@ -1,6 +1,6 @@
 DC_BASE=docker-compose.yml
 
-.PHONY: up down build shell migrate makemigrations createsuperuser test reset-db logs
+.PHONY: up down build shell migrate makemigrations createsuperuser test reset-db logs lint format
 
 up:
 	docker compose -f $(DC_BASE) up --build
@@ -31,3 +31,9 @@ test:
 
 logs:
 	docker compose -f $(DC_BASE) logs -f
+
+lint:
+	docker compose run --rm ruff
+
+format:
+	docker compose run --rm ruff-fix
