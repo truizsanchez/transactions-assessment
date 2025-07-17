@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from transactions.models.mixins import AuditModel
+from transactions.models.mixins import TimestampedModel
 
 
-class Account(AuditModel):
+class Account(TimestampedModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 

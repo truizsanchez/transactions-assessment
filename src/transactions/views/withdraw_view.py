@@ -1,8 +1,8 @@
-import time
 
 from decimal import Decimal
 
 from django.db import transaction
+from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,6 +16,32 @@ from transactions.serializers import TransactionSerializer
 class WithdrawView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(
+        request=TransactionSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Withdrawal successful",
+                response=None
+            ),
+            400: OpenApiResponse(
+                description="Invalid data or insufficient funds",
+                response=None
+            )
+        },
+        description="Withdraw an amount from the authenticated user's account.",
+        examples=[
+            OpenApiExample(
+                'Valid withdrawal example',
+                value={"amount": "50.00"},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Insufficient funds example',
+                value={"amount": "999999.99"},
+                request_only=True
+            )
+        ]
+    )
     def post(self, request: Request) -> Response:
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +55,6 @@ class WithdrawView(APIView):
                 )
 
             with transaction.atomic():
-                time.sleep(0.2)  # Simulación de retardo (¿tal vez para condiciones de carrera?)
                 account.balance -= amount
                 account.save()
                 Transaction.objects.create(

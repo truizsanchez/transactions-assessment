@@ -1,10 +1,10 @@
 from django.db import models
 
 from transactions.models.account import Account
-from transactions.models.mixins import AuditModel
+from transactions.models.mixins import TimestampedModel
 
 
-class Transaction(AuditModel):
+class Transaction(TimestampedModel):
     class TransactionType(models.TextChoices):
         DEPOSIT = 'deposit', 'Deposit'
         WITHDRAW = 'withdraw', 'Withdraw'

@@ -1,6 +1,6 @@
 DC_BASE=docker-compose.yml
 
-.PHONY: up down build shell migrate makemigrations createsuperuser test reset-db logs lint format
+.PHONY: up down build shell migrate makemigrations createsuperuser test populate-test-db reset-db logs lint format
 
 up:
 	docker compose -f $(DC_BASE) up --build
@@ -25,6 +25,9 @@ makemigrations:
 
 createsuperuser:
 	docker compose -f $(DC_BASE) exec app poetry run python manage.py createsuperuser
+
+populate_test_db:
+	docker compose -f $(DC_BASE) exec app poetry run python manage.py populate_test_db
 
 test:
 	docker compose -f $(DC_BASE) exec app poetry run pytest

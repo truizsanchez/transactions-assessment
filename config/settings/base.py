@@ -41,12 +41,14 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    'drf_spectacular',
     "rest_framework",
     "rest_framework.authtoken",
 ]
 
 PROJECT_APPS = [
-    "transactions"
+    "transactions",
+    "authentication",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -87,6 +89,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Transactions API',
+    'DESCRIPTION': 'API for deposit, withdrawal, and account balance operations.',
+    'VERSION': '1.0.0',
 }
 
 # Database
