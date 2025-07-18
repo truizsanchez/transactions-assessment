@@ -155,6 +155,20 @@ Example:
 - GET `/ping/` → 200 OK  
 - Response: `{"pong": true, "db": "ok"}`
 
+### Production WSGI/ASGI Server
+The app currently runs using Django's built-in development server (runserver). This is not suitable for production.
+
+For production environments, use a proper WSGI or ASGI server such as:
+
+* gunicorn (common for WSGI deployments)
+
+* uvicorn (if switching to ASGI for async support)
+
+This ensures performance, stability, and proper process management under load.
+
+More info: https://docs.djangoproject.com/en/5.2/howto/deployment/
+
+
 ### Monitoring & Observability
 - Integrate APM tools like Sentry (for errors + performance).
 - Export Prometheus metrics (e.g. with django-prometheus) and create/use dashboards via Grafana
