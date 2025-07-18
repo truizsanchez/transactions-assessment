@@ -13,7 +13,7 @@
 ### Core (Django + PostgreSQL)
 ```bash
 make up                # Build and run the app and database containers
-make down              # Stop and remove containers and volumes
+make down              # Stop and remove containers
 make build             # Rebuild images without starting the stack
 make shell             # Open a bash shell in the app container
 make djshell           # Open the Django shell (manage.py shell)
@@ -26,20 +26,20 @@ make createsuperuser   # Create a Django superuser
 
 ## Development Tools
 
-```
+```bash
 make lint              # Run Ruff to lint the codebase
 make format            # Run Ruff to auto-format the codebase
 ```
 
 
 ## Database Utilities
-```
+```bash
 make populate-test-db  # Populate the test database with example data
 ```
 
 ## Testing
 
-```
+```bash
 make test              # Run the full test suite with pytest
 ```
 
@@ -144,7 +144,7 @@ with transaction.atomic():
 Even within a transaction, two concurrent requests might read the same balance before either updates it, potentially leading to a negative balance.
 
 **Recommended solution:**  
-Use a Redis distributed lock **per account ID**, ensuring only one request can mutate the balance of a given account at a time.
+Use a [Redis distributed lock](https://redis.io/glossary/redis-lock/) **per account ID**, ensuring only one request can mutate the balance of a given account at a time.
 
 ### Healthcheck Endpoint
 
@@ -176,11 +176,11 @@ More info: https://docs.djangoproject.com/en/5.2/howto/deployment/
 ## Optional Enhancements
 
 ### Performance Profiling
-Add profiling middleware during dev to analyze bottlenecks, for example `django-silk`
+Add profiling middleware during dev to analyze bottlenecks, for example [django-silk](https://github.com/jazzband/django-silk)
 
 ### Reusable Test Fixtures with Factory Boy
 
-Replace repetitive test setup with **Factory Boy** factories:
+Replace repetitive test setup with [Factory Boy](https://factoryboy.readthedocs.io/en/stable/) factories. Example:
 
 ```python
 class AccountFactory(factory.django.DjangoModelFactory):
@@ -205,6 +205,6 @@ This makes the logic reusable, easier to test, and decoupled from the HTTP layer
 | Context   | URL (example)               | Purpose                                 |
 |-----------|-----------------------------|------------------------------------------|
 | **local** | `postgres://…:5432/app`     | Dummy data for manual testing and dev.   |
-| **test**  | `postgres://…:5433/app_test`| Created and destroyed per test run; minimal fixtures only. |
+| **test**  | `postgres://…:5433/app_test`| Used during test runs; minimal or zero fixtures. |
 
 This separation allows local development to use realistic data scenarios, while keeping the test environment clean, fast, and predictable.
