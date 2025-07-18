@@ -45,7 +45,7 @@ make test              # Run the full test suite with pytest
 
 Tests run inside the container against the same PostgreSQL service.
 
-Need something more granular? Drop into the container and run pytest yourself:
+Need something more granular? Drop into the container and run Pytest yourself:
 
 ```
 make shell
@@ -58,7 +58,6 @@ py.test --reuse-db -s <path_test_file>
 make logs              # Tail logs from all containers
 ```
 
----
 
 ## Notes
 
@@ -66,25 +65,23 @@ make logs              # Tail logs from all containers
 - Each `make` target is a thin wrapper around Docker Compose for a smoother DX.
 
 
----
-
 ## Authentication
 
 This project uses **[DRF Token Authentication](https://www.django-rest-framework.org/api-guide/authentication/#tokenauthentication)**.
 
-### 🔐 Get a token
+### Get a token
 
 1. Ensure you have a user in the system. Create one via:
-* Django admin (/admin/)
-* Django shell (make djshell)
-* Swagger UI (http://localhost:8000/schema/swagger-ui/)
+- Django admin (/admin/)
+- Django shell (make djshell)
+- Swagger UI (http://localhost:8000/schema/swagger-ui/)
 
 Or simply create a superuser:
 ```bash
 make createsuperuser
 ```
 
-2.  request a token:
+2.  Request a token:
 
 ```bash
 curl -X POST http://localhost:8000/api/token/ \
@@ -98,11 +95,102 @@ Response example:
 {"token": "abc123..."}
 ```
 
-### 🔒 Authenticate your requests
+### Authenticate your requests
 
 Add the token in the`Authorization` header:
 
 ```http
 Authorization: Token abc123...
 ```
-You can now access protected endpoints. Alternatively, use the Swagger UI at http://localhost:8000/schema/swagger-ui/.
+You can now access protected endpoints.
+
+### API Documentation
+The OpenAPI schema is served at `/schema/` and the Swagger UI at `/schema/swagger-ui/`.
+
+## Roadmap for Production Readiness
+This project provides a solid foundation for a simple API, but to be suitable for real-world use in production 
+environments, several improvements should be made. 
+Below is a suggested roadmap outlining key areas of enhancement:
+
+### Environment-Specific Settings
+Currently, only `base` and `local` settings exist. To support a real deployment workflow, the following should be added:
+
+- `staging.py` — Mirrors production config, used for pre-release validation.
+- `production.py` — Configuration for the live environment serving real users.
+
+Secret management — Use AWS Secrets Manager or similar to avoid hardcoding sensitive data.
+
+### Continuous Integration / Continuous Deployment
+Introduce GitHub Actions (or another CI system) with the following stages:
+1. Lint: using `ruff` for example (as currently with `make lint`)
+2. Tests & Coverage: `pytest --cov`
+3. Build & Push: Docker image built and pushed to a registry (e.g. AWS Elastic Container Registry - ECR)
+4. Deploy: Automatic to staging on every push to `main`; deploy to production triggered by tagging a release on `main`
+
+Include quality gates to prevent merging if:
+- Tests fail
+- Coverage falls below a minimum threshold (e.g. 90%)
+
+### Concurrency Handling for Transactions
+The following critical section in `WithdrawView` is **theoretically vulnerable to race conditions** under heavy load:
+
+```python
+with transaction.atomic():
+    account.balance -= amount
+    account.save()
+    Transaction.objects.create(...)
+```
+
+Even within a transaction, two concurrent requests might read the same balance before either updates it, potentially leading to a negative balance.
+
+**Recommended solution:**  
+Use a Redis distributed lock **per account ID**, ensuring only one request can mutate the balance of a given account at a time.
+
+### Healthcheck Endpoint
+
+Add a simple ping endpoint. This allows orchestration systems (Kubernetes, ECS, etc.) to monitor the instance’s health and restart if needed.
+The healthcheck should include a database connectivity check to ensure the application can reach the database and that it's responsive.
+
+Example:
+- GET `/ping/` → 200 OK  
+- Response: `{"pong": true, "db": "ok"}`
+
+### Monitoring & Observability
+- Integrate APM tools like Sentry (for errors + performance).
+- Export Prometheus metrics (e.g. with django-prometheus) and create/use dashboards via Grafana
+
+## Optional Enhancements
+
+### Performance Profiling
+Add profiling middleware during dev to analyze bottlenecks, for example `django-silk`
+
+### Reusable Test Fixtures with Factory Boy
+
+Replace repetitive test setup with **Factory Boy** factories:
+
+```python
+class AccountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Account
+    balance = Decimal("100.00")
+```
+
+Use these factories across tests to reduce duplication and improve maintainability.
+
+### Clean Architecture for Business Logic
+Currently, business logic (e.g. withdrawals, deposits) lives directly in the views. This is acceptable given the current simplicity of the use cases.
+
+However, as soon as the business logic grows more complex, it's strongly recommended to adopt a clean architecture approach:
+- Move business logic into use case classes
+- Keep views as thin controllers that delegate to those use cases
+
+This makes the logic reusable, easier to test, and decoupled from the HTTP layer.
+
+### Separate Databases for Local and Tests
+
+| Context   | URL (example)               | Purpose                                 |
+|-----------|-----------------------------|------------------------------------------|
+| **local** | `postgres://…:5432/app`     | Dummy data for manual testing and dev.   |
+| **test**  | `postgres://…:5433/app_test`| Created and destroyed per test run; minimal fixtures only. |
+
+This separation allows local development to use realistic data scenarios, while keeping the test environment clean, fast, and predictable.
