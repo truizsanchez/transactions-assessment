@@ -1,3 +1,4 @@
+import logging
 
 from decimal import Decimal
 
@@ -11,6 +12,8 @@ from rest_framework.views import APIView
 from transactions.models import Account
 from transactions.models.transaction import Transaction
 from transactions.serializers import TransactionSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class WithdrawView(APIView):
@@ -48,7 +51,13 @@ class WithdrawView(APIView):
             amount: Decimal = serializer.validated_data['amount']
             account: Account = request.user.account
 
+            logger.info(f"User {request.user.username} is attempting to withdraw {amount}.")
+
             if account.balance < amount:
+                logger.warning(
+                    f"User {request.user.username} attempted to withdraw {amount} but has insufficient "
+                    f"funds (balance: {account.balance})."
+                )
                 return Response(
                     {'error': 'Insufficient funds'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -62,8 +71,10 @@ class WithdrawView(APIView):
                     transaction_type=Transaction.TransactionType.WITHDRAW,
                     amount=amount
                 )
+            logger.info(f"User {request.user.username} successfully withdrew {amount}. New balance: {account.balance}")
             return Response(
                 {'message': 'Withdrawal successful', 'new_balance': account.balance},
                 status=status.HTTP_200_OK
             )
+        logger.warning(f"User {request.user.username} submitted invalid withdrawal data. Errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

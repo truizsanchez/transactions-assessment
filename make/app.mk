@@ -26,7 +26,7 @@ makemigrations:
 createsuperuser:
 	docker compose -f $(DC_BASE) exec app poetry run python manage.py createsuperuser
 
-populate_test_db:
+populate-test-db:
 	docker compose -f $(DC_BASE) exec app poetry run python manage.py populate_test_db
 
 test:

@@ -1,9 +1,13 @@
+import logging
+
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from transactions.serializers import BalanceSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class BalanceView(APIView):
@@ -27,5 +31,6 @@ class BalanceView(APIView):
     )
     def get(self, request):
         account = request.user.account
+        logger.info(f"User {request.user.username} requested balance. Current balance: {account.balance}")
         serializer = BalanceSerializer(account)
         return Response(serializer.data, status=status.HTTP_200_OK)
