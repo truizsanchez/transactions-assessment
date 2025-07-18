@@ -1,3 +1,5 @@
+import logging
+
 from decimal import Decimal
 
 from django.db import transaction
@@ -10,6 +12,8 @@ from rest_framework.views import APIView
 from transactions.models import Account
 from transactions.models.transaction import Transaction
 from transactions.serializers import TransactionSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class DepositView(APIView):
@@ -55,8 +59,10 @@ class DepositView(APIView):
                     transaction_type=Transaction.TransactionType.DEPOSIT,
                     amount=amount
                 )
+            logger.info(f"User {request.user.username} deposited {amount}. New balance: {account.balance}")
             return Response(
                 {'message': 'Deposit successful', 'new_balance': account.balance},
                 status=status.HTTP_200_OK
             )
+        logger.warning(f"User {request.user.username} failed to deposit. Errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
